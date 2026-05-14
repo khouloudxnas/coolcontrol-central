@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CoolControl Central</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --bg:#f0f2f8;--surface:#fff;--surface2:#f8f9fc;--border:#e4e7ef;
+ --text:#1a1f36;--text2:#4a5568;--text3:#8a92a6;
+ --blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+ --green:#059669;--green-bg:#ecfdf5;--green-border:#a7f3d0;
+ --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+ --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+ --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;
+ --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+ --r:12px;--r-sm:8px;
+ --shadow:0 2px 8px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.05);
+ --shadow-md:0 4px 16px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.05);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ── Login ── */
+#login-overlay{position:fixed;inset:0;background:rgba(15,20,40,.6);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(8px)}
+#login-box{background:var(--surface);border-radius:20px;padding:36px;width:360px;box-shadow:var(--shadow-md)}
+#login-box h2{font-size:1.4rem;font-weight:700;margin-bottom:6px}
+#login-box p{color:var(--text3);font-size:.82rem;margin-bottom:24px}
+.f-label{display:block;font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:5px}
+.f-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.85rem;font-family:var(--font);outline:none;transition:border .15s}
+.f-input:focus{border-color:var(--blue)}
+.btn{padding:10px 18px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{filter:brightness(1.08)}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{filter:brightness(1.08)}
+.btn-full{width:100%}
+#login-error{color:var(--red);font-size:.78rem;margin-top:8px;display:none}
+
+/* ── Layout ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.logo{font-size:1.05rem;font-weight:800;color:var(--blue);letter-spacing:-.5px}
+.logo span{color:var(--text3);font-weight:400;font-size:.78rem;margin-left:6px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.b-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.b-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.b-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.b-gray{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+.main{max-width:1200px;margin:0 auto;padding:24px}
+.page-title{font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.page-sub{color:var(--text3);font-size:.82rem;margin-bottom:24px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--r-sm);padding:4px;border:1px solid var(--border);margin-bottom:24px;width:fit-content}
+.tab-btn{padding:7px 18px;border-radius:6px;border:none;background:transparent;font-size:.8rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.tab-btn.active{background:var(--blue);color:#fff}
+
+/* ── Cards ── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:20px;box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:.9rem;font-weight:700}
+.sec{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px}
+
+/* ── Room Grid ── */
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.room-card{background:var(--surface);border-radius:var(--r);border:2px solid var(--border);padding:20px;box-shadow:var(--shadow);transition:all .2s;position:relative;overflow:hidden}
+.room-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);border-radius:var(--r) var(--r) 0 0;opacity:0;transition:opacity .2s}
+.room-card.online::before{opacity:1}
+.room-card.offline{opacity:.7;border-color:var(--border)}
+.room-card.online{border-color:var(--blue-border)}
+.room-name{font-size:1rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.room-ts{font-size:.7rem;color:var(--text3);margin-bottom:14px}
+.room-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.metric{background:var(--surface2);border-radius:var(--r-sm);padding:10px 12px}
+.metric-label{font-size:.68rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.metric-val{font-size:1.05rem;font-weight:700}
+.room-actions{display:flex;gap:8px;flex-wrap:wrap}
+.room-actions .btn{padding:7px 14px;font-size:.75rem}
+.presence-indicator{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:20px}
+.presence-indicator.present{background:var(--green-bg);color:var(--green)}
+.presence-indicator.absent{background:var(--surface2);color:var(--text3)}
+
+/* ── Commande IR ── */
+.cmd-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.cmd-form select,.cmd-form input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;font-family:var(--font);outline:none;background:var(--surface)}
+.cmd-form select:focus,.cmd-form input:focus{border-color:var(--blue)}
+
+/* ── Assistant IA ── */
+.chat-box{background:var(--surface2);border-radius:var(--r);border:1px solid var(--border);padding:16px;min-height:200px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.chat-msg{padding:10px 14px;border-radius:10px;font-size:.82rem;line-height:1.6;max-width:85%}
+.chat-msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-radius:10px 10px 2px 10px}
+.chat-msg.ai{background:var(--surface);border:1px solid var(--border);align-self:flex-start;border-radius:10px 10px 10px 2px}
+.chat-msg.typing{color:var(--text3);font-style:italic}
+.chat-input-row{display:flex;gap:8px;margin-top:10px}
+.chat-input-row input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.84rem;font-family:var(--font);outline:none}
+.chat-input-row input:focus{border-color:var(--blue)}
+
+/* ── Voix ── */
+.mic-btn{width:44px;height:44px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:all .2s;background:var(--surface2);border:1.5px solid var(--border)}
+.mic-btn.listening{background:var(--red);animation:mic-pulse 1s infinite;border-color:var(--red)}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+.voice-status{font-size:.75rem;color:var(--text3);margin-top:6px;min-height:18px;font-style:italic}
+
+/* ── KPIs globaux ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:16px;box-shadow:var(--shadow)}
+.kpi-label{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.kpi-val{font-size:1.6rem;font-weight:800;line-height:1}
+.kpi-sub{font-size:.7rem;color:var(--text3);margin-top:4px}
+
+/* ── Historique ── */
+.history-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.history-table th{padding:8px 12px;text-align:left;font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--border)}
+.history-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.history-table tr:last-child td{border-bottom:none}
+.history-table tr:hover td{background:var(--surface2)}
+
+/* ── Commande rapide modal ── */
+#cmd-modal{display:none;position:fixed;inset:0;background:rgba(15,20,40,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#cmd-modal.show{display:flex}
+.modal-box{background:var(--surface);border-radius:var(--r);padding:28px;width:400px;box-shadow:var(--shadow-md)}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+
+/* ── Offline banner ── */
+.offline-banner{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r-sm);padding:10px 16px;font-size:.78rem;color:var(--amber);font-weight:600;margin-bottom:16px;display:none}
+.offline-banner.show{display:block}
+
+/* ── Misc ── */
+.divider{height:1px;background:var(--border);margin:16px 0}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.row-key{font-size:.78rem;color:var(--text3);font-weight:500}
+.row-val{font-size:.82rem;font-weight:600;font-family:var(--mono)}
+.empty-state{text-align:center;padding:40px;color:var(--text3);font-size:.85rem}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-overlay">
+ <div id="login-box">
+  <h2>🌡 CoolControl Central</h2>
+  <p>Connectez-vous pour accéder au tableau de bord multi-salle</p>
+  <div style="margin-bottom:14px">
+   <label class="f-label">Email</label>
+   <input type="email" class="f-input" id="login-email" value="admin@coolcontrol.local" placeholder="admin@coolcontrol.local">
+  </div>
+  <div style="margin-bottom:20px">
+   <label class="f-label">Mot de passe</label>
+   <input type="password" class="f-input" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+  </div>
+  <button class="btn btn-primary btn-full" onclick="doLogin()">Se connecter</button>
+  <div id="login-error">❌ Email ou mot de passe incorrect</div>
+  <p style="font-size:.7rem;color:var(--text3);margin-top:16px;text-align:center">
+   Mode démo : utiliser <strong>demo@coolcontrol.local</strong> / <strong>demo</strong>
+  </p>
+ </div>
+</div>
+
+<!-- ══ COMMANDE IR MODAL ══ -->
+<div id="cmd-modal">
+ <div class="modal-box">
+  <div class="modal-title">Commande IR — <span id="modal-room-name"></span></div>
+  <input type="hidden" id="modal-room-id">
+  <div class="cmd-form">
+   <div>
+    <label class="f-label">Mode</label>
+    <select id="modal-mode">
+     <option value="off">⏹ OFF</option>
+     <option value="cool" selected>❄️ Cool</option>
+     <option value="heat">🔥 Heat</option>
+     <option value="fan_only">💨 Ventilateur</option>
+     <option value="dry">💧 Dry</option>
+    </select>
+   </div>
+   <div>
+    <label class="f-label">Vitesse ventilateur</label>
+    <select id="modal-fan">
+     <option value="auto" selected>Auto</option>
+     <option value="low">Faible</option>
+     <option value="mid">Moyenne</option>
+     <option value="high">Haute</option>
+    </select>
+   </div>
+   <div>
+    <label class="f-label">Température</label>
+    <input type="number" id="modal-temp" value="22" min="16" max="30" style="width:100%">
+   </div>
+   <div>
+    <label class="f-label">Marque</label>
+    <input type="text" id="modal-brand" placeholder="LG">
+   </div>
+  </div>
+  <div style="margin-top:10px">
+   <label class="f-label">Modèle</label>
+   <input type="text" class="f-input" id="modal-model" placeholder="P12EP1">
+  </div>
+  <div class="modal-actions">
+   <button class="btn btn-ghost" onclick="closeCmdModal()">Annuler</button>
+   <button class="btn btn-primary" onclick="sendCmdModal()">Envoyer commande</button>
+  </div>
+ </div>
+</div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+ <span class="logo">❄ CoolControl <span>Central</span></span>
+ <div class="topbar-right">
+  <div id="sync-indicator" style="font-size:.75rem;color:var(--text3)"><span class="spinner"></span>Chargement...</div>
+  <span id="user-badge" class="badge b-blue" style="display:none"></span>
+  <button class="btn btn-ghost" style="padding:6px 12px;font-size:.75rem" onclick="doLogout()">Déconnexion</button>
+ </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+ <div class="page-title">Tableau de bord multi-salle</div>
+ <div class="page-sub" id="last-update-info">Chargement des données Firebase...</div>
+
+ <!-- Offline banner -->
+ <div class="offline-banner" id="offline-banner">⚠️ Connexion Firebase interrompue — données possiblement obsolètes</div>
+
+ <!-- KPIs globaux -->
+ <div class="kpi-grid">
+  <div class="kpi-card">
+   <div class="kpi-label">Salles en ligne</div>
+   <div class="kpi-val" id="kpi-online" style="color:var(--green)">—</div>
+   <div class="kpi-sub" id="kpi-total">sur — total</div>
+  </div>
+  <div class="kpi-card">
+   <div class="kpi-label">Présences actives</div>
+   <div class="kpi-val" id="kpi-presence" style="color:var(--blue)">—</div>
+   <div class="kpi-sub">personnes détectées</div>
+  </div>
+  <div class="kpi-card">
+   <div class="kpi-label">Climatiseurs ON</div>
+   <div class="kpi-val" id="kpi-ac-on" style="color:var(--amber)">—</div>
+   <div class="kpi-sub">unités actives</div>
+  </div>
+  <div class="kpi-card">
+   <div class="kpi-label">Temp. moy. bâtiment</div>
+   <div class="kpi-val" id="kpi-avg-temp" style="color:var(--purple)">—</div>
+   <div class="kpi-sub">degrés Celsius</div>
+  </div>
+ </div>
+
+ <!-- Tabs -->
+ <div class="tabs">
+  <button class="tab-btn active" onclick="showTab('rooms',this)">🏢 Salles</button>
+  <button class="tab-btn" onclick="showTab('voice',this)">🎤 Voix & IA</button>
+  <button class="tab-btn" onclick="showTab('history',this)">📊 Historique</button>
+  <button class="tab-btn" onclick="showTab('config',this)">⚙ Config</button>
+ </div>
+
+ <!-- ══ PAGE: SALLES ══ -->
+ <div id="page-rooms" class="tab-page active">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+   <span style="font-size:.82rem;color:var(--text3)" id="rooms-count">Chargement...</span>
+   <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost" onclick="refreshAll()" style="padding:7px 14px;font-size:.75rem">↻ Rafraîchir</button>
+    <button class="btn btn-danger" onclick="sendAllOff()" style="padding:7px 14px;font-size:.75rem">⏹ Tout éteindre</button>
+    <button class="btn btn-success" onclick="sendAllOn()" style="padding:7px 14px;font-size:.75rem">❄️ Tout allumer</button>
+   </div>
+  </div>
+  <div class="rooms-grid" id="rooms-grid">
+   <div class="empty-state">⏳ Connexion à Firebase...</div>
+  </div>
+ </div>
+
+ <!-- ══ PAGE: VOIX & IA ══ -->
+ <div id="page-voice" class="tab-page" style="display:none">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+   <!-- Commandes vocales -->
+   <div class="card">
+    <div class="card-head">
+     <div class="card-title">🎤 Commandes vocales</div>
+     <span class="badge b-blue" id="speech-support-badge">Vérification...</span>
+    </div>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:16px;line-height:1.7">
+     Commandes disponibles : <em>"allume le clim"</em>, <em>"éteins tout"</em>,
+     <em>"mets 22 degrés"</em>, <em>"mode auto salle A"</em>,
+     <em>"quelle est la température"</em>
+    </p>
+    <div style="display:flex;align-items:center;gap:12px">
+     <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Parler">🎤</button>
+     <div>
+      <div style="font-size:.82rem;font-weight:600">Appuyer pour parler</div>
+      <div class="voice-status" id="voice-status">En attente...</div>
+     </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:.78rem;font-weight:600;margin-bottom:8px">Dernière commande</div>
+    <div id="voice-transcript" style="font-size:.82rem;color:var(--text2);font-style:italic;min-height:24px;padding:8px;background:var(--surface2);border-radius:var(--r-sm)">—</div>
+    <div id="voice-result" style="font-size:.78rem;color:var(--green);margin-top:6px;min-height:18px"></div>
+   </div>
+
+   <!-- Assistant IA -->
+   <div class="card">
+    <div class="card-head">
+     <div class="card-title">🤖 Assistant IA</div>
+     <span class="badge b-purple">Gemini</span>
+    </div>
+    <p style="font-size:.78rem;color:var(--text3);margin-bottom:12px;line-height:1.6">
+     Posez des questions sur vos salles, consommation, tendances...
+    </p>
+    <div class="chat-box" id="chat-box">
+     <div class="chat-msg ai">Bonjour ! Je suis l'assistant CoolControl. Posez-moi des questions sur vos salles, la température, la consommation ou l'état des climatiseurs.</div>
+    </div>
+    <div class="chat-input-row">
+     <input type="text" id="chat-input" placeholder="Ex: Quelle salle consomme le plus ?" onkeydown="if(event.key==='Enter')sendChat()">
+     <button class="mic-btn" id="mic-chat-btn" onclick="toggleVoiceChat()" title="Dicter">🎤</button>
+     <button class="btn btn-primary" onclick="sendChat()" style="white-space:nowrap">Envoyer</button>
+    </div>
+    <div id="gemini-key-warning" style="font-size:.72rem;color:var(--amber);margin-top:8px;display:none">
+     ⚠ Clé Gemini non configurée — éditer CONFIG dans l'onglet Config
+    </div>
+   </div>
+  </div>
+
+  <!-- Commandes rapides vocales -->
+  <div class="sec">Commandes rapides</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+   <button class="btn btn-ghost" onclick="quickVoiceCmd('allume le climatiseur dans toutes les salles')">❄️ Tout allumer</button>
+   <button class="btn btn-ghost" onclick="quickVoiceCmd('éteins tous les climatiseurs')">⏹ Tout éteindre</button>
+   <button class="btn btn-ghost" onclick="quickVoiceCmd('quelle est la température moyenne')">🌡 Temp. moyenne</button>
+   <button class="btn btn-ghost" onclick="quickVoiceCmd('y a-t-il des salles avec présence détectée')">👁 Présences</button>
+   <button class="btn btn-ghost" onclick="quickVoiceCmd('donne-moi un résumé de toutes les salles')">📋 Résumé</button>
+  </div>
+ </div>
+
+ <!-- ══ PAGE: HISTORIQUE ══ -->
+ <div id="page-history" class="tab-page" style="display:none">
+  <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+   <select id="hist-room-filter" onchange="renderHistory()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;font-family:var(--font)">
+    <option value="all">Toutes les salles</option>
+   </select>
+   <button class="btn btn-ghost" onclick="loadHistory()" style="padding:8px 14px;font-size:.78rem">↻ Charger</button>
+  </div>
+  <div class="card">
+   <table class="history-table">
+    <thead>
+     <tr>
+      <th>Horodatage</th>
+      <th>Salle</th>
+      <th>Temp.</th>
+      <th>Humidité</th>
+      <th>Présence</th>
+      <th>Clim</th>
+      <th>Mode</th>
+      <th>Auto</th>
+     </tr>
+    </thead>
+    <tbody id="history-tbody">
+     <tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">Cliquer sur "Charger" pour afficher l'historique</td></tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+
+ <!-- ══ PAGE: CONFIG ══ -->
+ <div id="page-config" class="tab-page" style="display:none">
+  <div class="card" style="max-width:560px">
+   <div class="card-title" style="margin-bottom:16px">Configuration Firebase & IA</div>
+
+   <label class="f-label">URL Firebase (RTDB)</label>
+   <input type="text" class="f-input" id="cfg-firebase-url"
+    value="https://coolcontrol-880bf-default-rtdb.firebaseio.com"
+    style="margin-bottom:12px;font-family:var(--mono);font-size:.78rem">
+
+   <label class="f-label">Clé API Gemini</label>
+   <input type="text" class="f-input" id="cfg-gemini-key"
+    placeholder="AIza..."
+    style="margin-bottom:6px;font-family:var(--mono);font-size:.78rem">
+   <p style="font-size:.7rem;color:var(--text3);margin-bottom:12px">
+    Obtenir gratuitement sur
+    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--blue)">Google AI Studio</a>.
+    15 req/min, 1M tokens/jour gratuits.
+   </p>
+
+   <label class="f-label">Intervalle de rafraîchissement (secondes)</label>
+   <input type="number" class="f-input" id="cfg-refresh" value="5" min="2" max="60" style="margin-bottom:12px">
+
+   <button class="btn btn-primary btn-full" onclick="saveConfig()">💾 Sauvegarder la configuration</button>
+   <div id="cfg-msg" style="margin-top:8px;font-size:.78rem;font-weight:600"></div>
+  </div>
+
+  <div class="sec">Firebase Console — Étapes de sécurisation</div>
+  <div class="card" style="max-width:560px">
+   <ol style="padding-left:20px;font-size:.82rem;line-height:2;color:var(--text2)">
+    <li>Aller sur <a href="https://console.firebase.google.com" target="_blank" style="color:var(--blue)">console.firebase.google.com</a></li>
+    <li>Projet coolcontrol → <strong>Authentication</strong> → Commencer → Email/Password → Activer</li>
+    <li>Ajouter un utilisateur : <code style="background:var(--surface2);padding:1px 6px;border-radius:4px">admin@coolcontrol.local</code></li>
+    <li><strong>Realtime Database</strong> → Règles → Coller les règles ci-dessous</li>
+    <li>Publier</li>
+   </ol>
+   <div style="margin-top:14px">
+    <div style="font-size:.75rem;font-weight:600;margin-bottom:6px">Règles RTDB à copier :</div>
+    <pre style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:.72rem;overflow-x:auto;font-family:var(--mono)">{
+  "rules": {
+    "rooms": {
+      "$room_id": {
+        ".read":  "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}</pre>
+   </div>
+  </div>
+ </div>
+
+</div><!-- .main -->
+
+<script type="module">
+/* ══════════════════════════════════════════════
+   CONFIGURATION — modifier selon votre setup
+   ══════════════════════════════════════════════ */
+const DEFAULT_CONFIG = {
+  firebaseUrl: 'https://coolcontrol-880bf-default-rtdb.firebaseio.com',
+  geminiKey:   '',          /* ← coller votre clé Gemini ici ou via l'onglet Config */
+  refreshSec:  5,
+};
+
+/* ══════════════════════════════════════════════
+   IMPORT Firebase SDK (modular v10)
+   ══════════════════════════════════════════════ */
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  getDatabase, ref, get, set, onValue, child
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+/* ══════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════ */
+let cfg = { ...DEFAULT_CONFIG };
+let app, auth, db;
+let roomsData = {};       /* { roomId: { live: {...}, history: {...} } } */
+let historyData = [];     /* points historique aplatis */
+let refreshInterval = null;
+let isListening = false;
+let recognition = null;
+let isChatListening = false;
+let recognitionChat = null;
+let currentUser = null;
+
+/* ══════════════════════════════════════════════
+   PERSISTENCE CONFIG (localStorage)
+   ══════════════════════════════════════════════ */
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('cc_central_cfg');
+    if (saved) cfg = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
+  } catch(e) {}
+  document.getElementById('cfg-firebase-url').value = cfg.firebaseUrl;
+  document.getElementById('cfg-gemini-key').value   = cfg.geminiKey;
+  document.getElementById('cfg-refresh').value      = cfg.refreshSec;
+  if (!cfg.geminiKey) document.getElementById('gemini-key-warning').style.display = 'block';
+}
+
+window.saveConfig = function() {
+  cfg.firebaseUrl = document.getElementById('cfg-firebase-url').value.trim();
+  cfg.geminiKey   = document.getElementById('cfg-gemini-key').value.trim();
+  cfg.refreshSec  = parseInt(document.getElementById('cfg-refresh').value) || 5;
+  localStorage.setItem('cc_central_cfg', JSON.stringify(cfg));
+  const msg = document.getElementById('cfg-msg');
+  msg.textContent = '✅ Sauvegardé — recharger la page pour appliquer';
+  msg.style.color = 'var(--green)';
+  if (cfg.geminiKey)
+    document.getElementById('gemini-key-warning').style.display = 'none';
+};
+
+/* ══════════════════════════════════════════════
+   FIREBASE INIT
+   ══════════════════════════════════════════════ */
+function initFirebase() {
+  /* Config publique Firebase — safe à exposer côté client */
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpp4bSewEaHhU3XS4UDhUp6Hfo_iveI3E",
+    authDomain: "coolcontrol-880bf.firebaseapp.com",
+    databaseURL: "https://coolcontrol-880bf-default-rtdb.firebaseio.com",
+    projectId: "coolcontrol-880bf",
+    storageBucket: "coolcontrol-880bf.firebasestorage.app",
+    messagingSenderId: "25218823017",
+    appId: "1:25218823017:web:918feee364962647b3c3f8",
+    measurementId: "G-SQWSRPT4T7"
+  };
+
+  try {
+    app  = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db   = getDatabase(app);
+  } catch(e) {
+    /* App déjà initialisée si page rechargée */
+    console.warn('Firebase init:', e.message);
+  }
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('user-badge').textContent = user.email;
+      document.getElementById('user-badge').style.display = 'inline-flex';
+      startPolling();
+    } else {
+      currentUser = null;
+      document.getElementById('login-overlay').style.display = 'flex';
+      stopPolling();
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════
+   AUTH
+   ══════════════════════════════════════════════ */
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  /* Mode démo — pas de vrai Firebase Auth */
+  if (email === 'demo@coolcontrol.local' && pass === 'demo') {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('user-badge').textContent = 'Mode démo';
+    document.getElementById('user-badge').style.display = 'inline-flex';
+    startPollingDemo();
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    errEl.style.display = 'block';
+    errEl.textContent = '❌ ' + (e.code === 'auth/invalid-credential'
+      ? 'Email ou mot de passe incorrect'
+      : e.message);
+  }
+};
+
+window.doLogout = async function() {
+  stopPolling();
+  if (auth) await signOut(auth);
+  roomsData = {};
+  renderRooms();
+};
+
+/* ══════════════════════════════════════════════
+   POLLING FIREBASE
+   ══════════════════════════════════════════════ */
+function startPolling() {
+  fetchRooms();
+  refreshInterval = setInterval(fetchRooms, cfg.refreshSec * 1000);
+}
+function stopPolling() {
+  if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
+}
+
+async function fetchRooms() {
+  if (!db) return;
+  try {
+    const snap = await get(ref(db, 'rooms'));
+    if (snap.exists()) {
+      roomsData = snap.val();
+    } else {
+      roomsData = {};
+    }
+    document.getElementById('offline-banner').classList.remove('show');
+    const now = new Date().toLocaleTimeString('fr-FR');
+    document.getElementById('last-update-info').textContent = `Dernière mise à jour : ${now} · ${Object.keys(roomsData).length} salle(s)`;
+    document.getElementById('sync-indicator').textContent = '✅ Synchronisé';
+    renderRooms();
+    renderKPIs();
+  } catch(e) {
+    document.getElementById('offline-banner').classList.add('show');
+    document.getElementById('sync-indicator').textContent = '⚠ Hors ligne';
+    console.error('Firebase fetch error:', e);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   MODE DÉMO — données simulées
+   ══════════════════════════════════════════════ */
+function startPollingDemo() {
+  roomsData = {
+    'salle-A': { live: {
+      room_id:'salle-A', temperature:23.5, humidity:55, dht_ok:true,
+      presence:true, presence_score:87, ac_on:true, ac_mode:'cool',
+      ac_temp:22, auto_mode:true, auto_state:'present',
+      timestamp: new Date().toISOString()
+    }},
+    'salle-B': { live: {
+      room_id:'salle-B', temperature:26.1, humidity:48, dht_ok:true,
+      presence:false, presence_score:0, ac_on:false, ac_mode:'off',
+      ac_temp:24, auto_mode:false, auto_state:'idle',
+      timestamp: new Date(Date.now() - 120000).toISOString()
+    }},
+    'conf-1': { live: {
+      room_id:'conf-1', temperature:21.8, humidity:62, dht_ok:true,
+      presence:true, presence_score:94, ac_on:true, ac_mode:'cool',
+      ac_temp:20, auto_mode:true, auto_state:'present',
+      timestamp: new Date().toISOString()
+    }},
+  };
+  renderRooms();
+  renderKPIs();
+  document.getElementById('last-update-info').textContent = 'Mode démo — données simulées';
+  document.getElementById('sync-indicator').textContent = '🟡 Démo';
+  refreshInterval = setInterval(() => {
+    /* Faire varier légèrement les valeurs démo */
+    Object.values(roomsData).forEach(r => {
+      if (r.live) r.live.temperature += (Math.random() - 0.5) * 0.3;
+      if (r.live) r.live.presence_score = Math.max(0, Math.min(100, r.live.presence_score + (Math.random()-0.5)*5));
+    });
+    renderRooms(); renderKPIs();
+  }, cfg.refreshSec * 1000);
+}
+
+/* ══════════════════════════════════════════════
+   ENVOYER COMMANDE VERS FIREBASE
+   ══════════════════════════════════════════════ */
+async function sendCommand(roomId, payload) {
+  if (!db) {
+    /* Mode démo — simuler */
+    console.log('[DÉMO] Commande vers', roomId, payload);
+    addChatMsg('ai', `[Démo] Commande envoyée à ${roomId} : ${JSON.stringify(payload)}`);
+    return true;
+  }
+  try {
+    await set(ref(db, `rooms/${roomId}/commands`), payload);
+    return true;
+  } catch(e) {
+    console.error('sendCommand error:', e);
+    return false;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   RENDER ROOMS
+   ══════════════════════════════════════════════ */
+function renderRooms() {
+  const grid = document.getElementById('rooms-grid');
+  const rooms = Object.keys(roomsData);
+
+  if (rooms.length === 0) {
+    grid.innerHTML = '<div class="empty-state">📡 Aucune salle trouvée dans Firebase.<br><small>Vérifier la configuration et la connexion des dispositifs.</small></div>';
+    document.getElementById('rooms-count').textContent = '0 salle';
+    return;
+  }
+
+  document.getElementById('rooms-count').textContent = `${rooms.length} salle(s)`;
+
+  /* Mettre à jour le filtre historique */
+  const histFilter = document.getElementById('hist-room-filter');
+  const prevFilter = histFilter.value;
+  histFilter.innerHTML = '<option value="all">Toutes les salles</option>' +
+    rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+  histFilter.value = prevFilter;
+
+  grid.innerHTML = rooms.map(roomId => {
+    const d = roomsData[roomId]?.live || {};
+    const ts = d.timestamp ? new Date(d.timestamp) : null;
+    const now = Date.now();
+    const ageSec = ts ? (now - ts.getTime()) / 1000 : 9999;
+    const online = ageSec < 120; /* online si données < 2 min */
+
+    const tempStr = d.dht_ok && d.temperature !== undefined
+      ? d.temperature.toFixed(1) + '°C' : '—';
+    const humStr  = d.dht_ok && d.humidity !== undefined
+      ? d.humidity.toFixed(0) + '%' : '—';
+    const tsStr   = ts ? ts.toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+    const acColor = d.ac_on ? 'var(--green)' : 'var(--text3)';
+    const autoColor = d.auto_mode ? 'var(--blue)' : 'var(--text3)';
+
+    return `
+<div class="room-card ${online ? 'online' : 'offline'}">
+ <div class="room-name">
+  <span>${d.room_id || roomId}</span>
+  ${online
+    ? '<span class="badge b-green" style="font-size:.65rem">● EN LIGNE</span>'
+    : '<span class="badge b-gray" style="font-size:.65rem">○ HORS LIGNE</span>'}
+ </div>
+ <div class="room-ts">Mis à jour : ${tsStr} ${ageSec < 9999 ? `(il y a ${Math.round(ageSec)}s)` : ''}</div>
+
+ <div style="margin-bottom:10px">
+  <span class="presence-indicator ${d.presence ? 'present' : 'absent'}">
+   ${d.presence ? '👤 PRÉSENT' : '💤 ABSENT'}
+   ${d.presence_score !== undefined ? `· ${Number(d.presence_score).toFixed(0)}%` : ''}
+  </span>
+ </div>
+
+ <div class="room-metrics">
+  <div class="metric">
+   <div class="metric-label">Température</div>
+   <div class="metric-val" style="color:var(--red)">${tempStr}</div>
+  </div>
+  <div class="metric">
+   <div class="metric-label">Humidité</div>
+   <div class="metric-val" style="color:var(--blue)">${humStr}</div>
+  </div>
+  <div class="metric">
+   <div class="metric-label">Climatiseur</div>
+   <div class="metric-val" style="color:${acColor};font-size:.85rem">
+    ${d.ac_on ? '❄️ ON' : '⏹ OFF'}
+    ${d.ac_mode && d.ac_mode !== 'off' ? `· ${d.ac_mode}` : ''}
+    ${d.ac_temp && d.ac_on ? `· ${d.ac_temp}°C` : ''}
+   </div>
+  </div>
+  <div class="metric">
+   <div class="metric-label">Mode</div>
+   <div class="metric-val" style="color:${autoColor};font-size:.85rem">
+    ${d.auto_mode ? '🤖 AUTO' : '✋ MANUEL'}
+   </div>
+  </div>
+ </div>
+
+ <div class="room-actions">
+  <button class="btn btn-primary" onclick='openCmdModal("${roomId}","${d.room_id||roomId}")'>📡 Commande IR</button>
+  <button class="btn ${d.auto_mode ? 'btn-amber' : 'btn-ghost'}"
+   onclick='toggleAuto("${roomId}",${!d.auto_mode})'>
+   ${d.auto_mode ? '⏸ Arrêter auto' : '▶ Mode auto'}
+  </button>
+  ${d.ac_on
+    ? `<button class="btn btn-ghost" onclick='quickOff("${roomId}")' style="font-size:.72rem">⏹ OFF</button>`
+    : `<button class="btn btn-ghost" onclick='quickOn("${roomId}")' style="font-size:.72rem">❄️ ON</button>`
+  }
+ </div>
+</div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════
+   RENDER KPIs GLOBAUX
+   ══════════════════════════════════════════════ */
+function renderKPIs() {
+  const rooms = Object.values(roomsData);
+  const now = Date.now();
+  const online   = rooms.filter(r => {
+    const ts = r.live?.timestamp ? new Date(r.live.timestamp).getTime() : 0;
+    return (now - ts) < 120000;
+  });
+  const presences = rooms.filter(r => r.live?.presence).length;
+  const acOn      = rooms.filter(r => r.live?.ac_on).length;
+  const temps     = rooms.filter(r => r.live?.dht_ok && r.live?.temperature !== undefined)
+                         .map(r => r.live.temperature);
+  const avgTemp   = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
+
+  document.getElementById('kpi-online').textContent    = online.length;
+  document.getElementById('kpi-total').textContent     = `sur ${rooms.length} total`;
+  document.getElementById('kpi-presence').textContent  = presences;
+  document.getElementById('kpi-ac-on').textContent     = acOn;
+  document.getElementById('kpi-avg-temp').textContent  = avgTemp !== '—' ? avgTemp + '°C' : '—';
+}
+
+/* ══════════════════════════════════════════════
+   ACTIONS RAPIDES
+   ══════════════════════════════════════════════ */
+window.refreshAll = fetchRooms;
+
+window.sendAllOff = async function() {
+  if (!confirm('Éteindre TOUS les climatiseurs ?')) return;
+  for (const roomId of Object.keys(roomsData)) {
+    await sendCommand(roomId, { action: 'send_ir', mode: 'off' });
+  }
+};
+
+window.sendAllOn = async function() {
+  if (!confirm('Allumer TOUS les climatiseurs ?')) return;
+  for (const roomId of Object.keys(roomsData)) {
+    await sendCommand(roomId, { action: 'send_ir', mode: 'cool', fan: 'auto', temp: '22' });
+  }
+};
+
+window.quickOff = async function(roomId) {
+  await sendCommand(roomId, { action: 'send_ir', mode: 'off' });
+};
+
+window.quickOn = async function(roomId) {
+  await sendCommand(roomId, { action: 'send_ir', mode: 'cool', fan: 'auto', temp: '22' });
+};
+
+window.toggleAuto = async function(roomId, enable) {
+  await sendCommand(roomId, { action: 'toggle_auto', value: enable });
+};
+
+/* ══════════════════════════════════════════════
+   MODAL COMMANDE IR
+   ══════════════════════════════════════════════ */
+window.openCmdModal = function(roomId, roomName) {
+  document.getElementById('modal-room-id').value     = roomId;
+  document.getElementById('modal-room-name').textContent = roomName;
+  /* Pré-remplir depuis les données actuelles */
+  const d = roomsData[roomId]?.live || {};
+  if (d.ac_mode && d.ac_mode !== 'off') document.getElementById('modal-mode').value = d.ac_mode;
+  if (d.ac_temp) document.getElementById('modal-temp').value = d.ac_temp;
+  document.getElementById('cmd-modal').classList.add('show');
+};
+
+window.closeCmdModal = function() {
+  document.getElementById('cmd-modal').classList.remove('show');
+};
+
+window.sendCmdModal = async function() {
+  const roomId = document.getElementById('modal-room-id').value;
+  const mode   = document.getElementById('modal-mode').value;
+  const fan    = document.getElementById('modal-fan').value;
+  const temp   = document.getElementById('modal-temp').value;
+  const brand  = document.getElementById('modal-brand').value.trim();
+  const model  = document.getElementById('modal-model').value.trim();
+
+  const payload = brand && model
+    ? { action:'send_ir_full', brand, model, mode, fan, temp }
+    : { action:'send_ir', mode, fan, temp };
+
+  const ok = await sendCommand(roomId, payload);
+  closeCmdModal();
+  if (ok) setTimeout(fetchRooms, 4000);
+};
+
+/* Fermer modal en cliquant dehors */
+document.getElementById('cmd-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('cmd-modal')) closeCmdModal();
+});
+
+/* ══════════════════════════════════════════════
+   HISTORIQUE
+   ══════════════════════════════════════════════ */
+window.loadHistory = async function() {
+  const tbody = document.getElementById('history-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px"><span class="spinner"></span>Chargement...</td></tr>';
+  historyData = [];
+
+  if (!db) {
+    /* Démo */
+    historyData = Object.keys(roomsData).map(rid => ({
+      roomId: rid, timestamp: new Date().toISOString(),
+      temperature: (20 + Math.random()*8).toFixed(1), humidity: (45+Math.random()*20).toFixed(0),
+      presence: Math.random() > 0.5, ac_on: Math.random() > 0.4, ac_mode: 'cool', auto_mode: true,
+    }));
+    renderHistory(); return;
+  }
+
+  try {
+    const rooms = Object.keys(roomsData);
+    for (const roomId of rooms) {
+      const snap = await get(ref(db, `rooms/${roomId}/history`));
+      if (snap.exists()) {
+        Object.entries(snap.val()).forEach(([key, val]) => {
+          historyData.push({ roomId, key, ...val });
+        });
+      }
+    }
+    historyData.sort((a,b) => (b.timestamp||b.key) > (a.timestamp||a.key) ? 1 : -1);
+    renderHistory();
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--red);padding:20px">Erreur: ${e.message}</td></tr>`;
+  }
+};
+
+window.renderHistory = function() {
+  const filter = document.getElementById('hist-room-filter').value;
+  const tbody  = document.getElementById('history-tbody');
+  const data   = filter === 'all' ? historyData : historyData.filter(d => d.roomId === filter);
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">Aucune donnée — cliquer sur "Charger"</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.slice(0, 100).map(d => {
+    const ts = d.timestamp ? new Date(d.timestamp).toLocaleString('fr-FR') : d.key;
+    return `<tr>
+     <td style="font-family:var(--mono);font-size:.75rem">${ts}</td>
+     <td><span class="badge b-blue" style="font-size:.68rem">${d.roomId}</span></td>
+     <td>${d.temperature !== undefined ? Number(d.temperature).toFixed(1)+'°C' : '—'}</td>
+     <td>${d.humidity !== undefined ? Number(d.humidity).toFixed(0)+'%' : '—'}</td>
+     <td>${d.presence ? '<span style="color:var(--green)">👤 OUI</span>' : '<span style="color:var(--text3)">💤 NON</span>'}</td>
+     <td>${d.ac_on ? '<span style="color:var(--green)">ON</span>' : '<span style="color:var(--text3)">OFF</span>'}</td>
+     <td>${d.ac_mode||'—'}</td>
+     <td>${d.auto_mode ? '🤖' : '✋'}</td>
+    </tr>`;
+  }).join('');
+};
+
+/* ══════════════════════════════════════════════
+   TABS
+   ══════════════════════════════════════════════ */
+window.showTab = function(name, btn) {
+  document.querySelectorAll('.tab-page').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).style.display = 'block';
+  if (btn) btn.classList.add('active');
+};
+
+/* ══════════════════════════════════════════════
+   COMMANDES VOCALES
+   ══════════════════════════════════════════════ */
+function initSpeech() {
+  const badge = document.getElementById('speech-support-badge');
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    badge.textContent = '❌ Non supporté';
+    badge.className = 'badge b-red';
+    return;
+  }
+  badge.textContent = '✅ Disponible';
+  badge.className = 'badge b-green';
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript.toLowerCase();
+    document.getElementById('voice-transcript').textContent = text;
+    processVoiceCommand(text);
+  };
+  recognition.onerror = (e) => {
+    setVoiceStatus('Erreur: ' + e.error);
+    stopListening();
+  };
+  recognition.onend = stopListening;
+}
+
+window.toggleVoice = function() {
+  if (!recognition) return;
+  if (isListening) { recognition.stop(); stopListening(); }
+  else { recognition.start(); startListening(); }
+};
+
+function startListening() {
+  isListening = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  setVoiceStatus('🔴 Écoute en cours...');
+}
+function stopListening() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  setVoiceStatus('En attente...');
+}
+function setVoiceStatus(msg) {
+  document.getElementById('voice-status').textContent = msg;
+}
+
+async function processVoiceCommand(text) {
+  const result = document.getElementById('voice-result');
+  result.textContent = '';
+
+  /* Commandes directes — sans IA */
+  const rooms = Object.keys(roomsData);
+  const firstRoom = rooms[0] || null;
+
+  /* Éteindre tout */
+  if (/(éteins|arrête|stop|off).*(tout|clim|climatiseur)/i.test(text)) {
+    await sendAllOff_silent();
+    result.textContent = '✅ Extinction de tous les climatiseurs envoyée';
+    speak('Extinction de tous les climatiseurs en cours');
+    return;
+  }
+  /* Allumer tout */
+  if (/(allume|démarre|lance|on).*(tout|clim|climatiseur)/i.test(text)) {
+    await sendAllOn_silent();
+    result.textContent = '✅ Allumage de tous les climatiseurs envoyé';
+    speak('Allumage de tous les climatiseurs en cours');
+    return;
+  }
+  /* Température */
+  const tempMatch = text.match(/(\d{2})\s*degr/);
+  if (tempMatch && firstRoom) {
+    const t = tempMatch[1];
+    await sendCommand(firstRoom, { action:'send_ir', mode:'cool', fan:'auto', temp:t });
+    result.textContent = `✅ Consigne ${t}°C envoyée à ${firstRoom}`;
+    speak(`Consigne de ${t} degrés envoyée`);
+    return;
+  }
+  /* Mode auto */
+  if (/mode.auto|activ.*.auto/i.test(text) && firstRoom) {
+    await sendCommand(firstRoom, { action:'toggle_auto', value:true });
+    result.textContent = `✅ Mode automatique activé sur ${firstRoom}`;
+    speak('Mode automatique activé');
+    return;
+  }
+
+  /* Question complexe → Gemini */
+  result.textContent = '🤖 Question envoyée à l\'IA...';
+  const answer = await askGemini(text);
+  result.textContent = '🤖 ' + answer;
+  speak(answer);
+}
+
+async function sendAllOff_silent() {
+  for (const roomId of Object.keys(roomsData))
+    await sendCommand(roomId, { action:'send_ir', mode:'off' });
+}
+async function sendAllOn_silent() {
+  for (const roomId of Object.keys(roomsData))
+    await sendCommand(roomId, { action:'send_ir', mode:'cool', fan:'auto', temp:'22' });
+}
+
+window.quickVoiceCmd = function(text) {
+  document.getElementById('voice-transcript').textContent = text;
+  processVoiceCommand(text.toLowerCase());
+};
+
+/* Text-to-Speech */
+function speak(text) {
+  if (!window.speechSynthesis || !text) return;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'fr-FR';
+  utt.rate = 1.0;
+  speechSynthesis.speak(utt);
+}
+
+/* ══════════════════════════════════════════════
+   VOIX POUR LE CHAT IA
+   ══════════════════════════════════════════════ */
+window.toggleVoiceChat = function() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+  if (isChatListening) {
+    if (recognitionChat) recognitionChat.stop();
+    isChatListening = false;
+    document.getElementById('mic-chat-btn').classList.remove('listening');
+    return;
+  }
+  recognitionChat = new SpeechRecognition();
+  recognitionChat.lang = 'fr-FR';
+  recognitionChat.onresult = (e) => {
+    document.getElementById('chat-input').value = e.results[0][0].transcript;
+    isChatListening = false;
+    document.getElementById('mic-chat-btn').classList.remove('listening');
+    sendChat();
+  };
+  recognitionChat.onerror = () => {
+    isChatListening = false;
+    document.getElementById('mic-chat-btn').classList.remove('listening');
+  };
+  recognitionChat.onend = () => {
+    isChatListening = false;
+    document.getElementById('mic-chat-btn').classList.remove('listening');
+  };
+  recognitionChat.start();
+  isChatListening = true;
+  document.getElementById('mic-chat-btn').classList.add('listening');
+};
+
+/* ══════════════════════════════════════════════
+   ASSISTANT GEMINI
+   ══════════════════════════════════════════════ */
+window.sendChat = async function() {
+  const input = document.getElementById('chat-input');
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+
+  addChatMsg('user', question);
+  addChatMsg('ai typing', '...');
+
+  const answer = await askGemini(question);
+  /* Supprimer le message "..." */
+  const chatBox = document.getElementById('chat-box');
+  const typing = chatBox.querySelector('.typing');
+  if (typing) typing.remove();
+
+  addChatMsg('ai', answer);
+  speak(answer);
+};
+
+async function askGemini(question) {
+  if (!cfg.geminiKey) {
+    return 'Clé API Gemini non configurée. Aller dans l\'onglet Config pour la saisir.';
+  }
+
+  /* Construire le contexte avec les données actuelles de toutes les salles */
+  const roomsSummary = Object.entries(roomsData).map(([id, r]) => {
+    const d = r.live || {};
+    return `Salle "${id}": temp=${d.temperature?.toFixed(1)||'?'}°C, hum=${d.humidity?.toFixed(0)||'?'}%, ` +
+           `présence=${d.presence?'OUI':'NON'} (score=${d.presence_score?.toFixed(0)||'?'}%), ` +
+           `clim=${d.ac_on?'ON':'OFF'} mode=${d.ac_mode||'?'} consigne=${d.ac_temp||'?'}°C, ` +
+           `mode=${d.auto_mode?'AUTO':'MANUEL'}`;
+  }).join('\n');
+
+  const systemPrompt = `Tu es l'assistant intelligent de CoolControl, un système de gestion IoT des climatiseurs.
+Tu dois répondre en français, de façon concise (2-3 phrases max sauf si demande de résumé).
+Tu peux suggérer des actions mais tu ne les exécutes pas toi-même.
+
+État actuel du bâtiment (${new Date().toLocaleString('fr-FR')}) :
+${roomsSummary || 'Aucune donnée disponible'}
+
+Réponds à la question suivante de manière utile et précise.`;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${cfg.geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: systemPrompt },
+              { text: question }
+            ]
+          }],
+          generationConfig: { maxOutputTokens: 300, temperature: 0.7 }
+        })
+      }
+    );
+    const data = await response.json();
+    if (data.candidates?.[0]?.content?.parts?.[0]?.text)
+      return data.candidates[0].content.parts[0].text;
+    if (data.error)
+      return `Erreur Gemini: ${data.error.message}`;
+    return 'Réponse inattendue de l\'IA.';
+  } catch(e) {
+    return `Erreur réseau: ${e.message}`;
+  }
+}
+
+function addChatMsg(type, text) {
+  const box = document.getElementById('chat-box');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════ */
+loadConfig();
+initFirebase();
+initSpeech();
+
+</script>
+</body>
+</html>
