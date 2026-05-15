@@ -675,7 +675,7 @@ function renderRooms() {
     const ts = d.timestamp ? new Date(d.timestamp) : null;
     const now = Date.now();
     const ageSec = ts ? (now - ts.getTime()) / 1000 : 9999;
-    const online = ageSec < 120; /* online si données < 2 min */
+    const online = ageSec < 600; /* online si données < 10 min — cohérent avec push ESP32 toutes 5min */
 
     const tempStr = d.dht_ok && d.temperature !== undefined
       ? d.temperature.toFixed(1) + '°C' : '—';
@@ -750,7 +750,7 @@ function renderKPIs() {
   const now = Date.now();
   const online   = rooms.filter(r => {
     const ts = r.live?.timestamp ? new Date(r.live.timestamp).getTime() : 0;
-    return (now - ts) < 120000;
+    return (now - ts) < 600000;
   });
   const presences = rooms.filter(r => r.live?.presence).length;
   const acOn      = rooms.filter(r => r.live?.ac_on).length;
@@ -1103,7 +1103,7 @@ Réponds à la question suivante de manière utile et précise.`;
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${cfg.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cfg.geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
